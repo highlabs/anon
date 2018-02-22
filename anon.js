@@ -1,12 +1,10 @@
 #!/usr/bin/env node
 
 const fs            = require('fs')
-const ipv6          = require('ipv6')
 const Twit          = require('twit')
 const async         = require('async')
 const phantom       = require('phantom')
 const minimist      = require('minimist')
-const Mastodon      = require('mastodon')
 const Mustache      = require('mustache')
 const {WikiChanges} = require('wikichanges')
 
@@ -16,51 +14,6 @@ const argv = minimist(process.argv.slice(2), {
     config: './config.json'
   }
 })
-
-function address(ip) {
-  if (Array.from(ip).includes(':')) {
-    return new ipv6.v6.Address(ip)
-  } else {
-    i = new ipv6.v4.Address(ip)
-    const subnetMask = 96 + i.subnetMask
-    ip = `::ffff:${i.toV6Group()}/${subnetMask}`
-    return new ipv6.v6.Address(ip)
-  }
-}
-
-function ipToInt(ip) {
-  return address(ip).bigInteger()
-}
-
-function compareIps(ip1, ip2) {
-  const r = ipToInt(ip1).compareTo(ipToInt(ip2))
-  if (r === 0) {
-    return 0
-  } else if (r > 0) {
-    return 1
-  } else {
-    return -1
-  }
-}
-
-function isIpInRange(ip, block) {
-  if (Array.isArray(block)) {
-    return (compareIps(ip, block[0]) >= 0) && (compareIps(ip, block[1]) <= 0)
-  } else {
-    const a = address(ip)
-    const b = address(block)
-    return a.isInSubnet(b)
-  }
-}
-
-function isIpInAnyRange(ip, blocks) {
-  for (let block of Array.from(blocks)) {
-    if (isIpInRange(ip, block)) {
-      return true
-    }
-  }
-  return false
-}
 
 function getConfig(path) {
   const config = loadJson(path)
@@ -83,22 +36,21 @@ function loadJson(path) {
   return require(path)
 }
 
-function getStatusLength(edit, name, template) {
+function getStatusLength(edit, template) {
   // https://support.twitter.com/articles/78124-posting-links-in-a-tweet
   const fakeUrl = 'https://t.co/BzHLWr31Ce'
-  const status = Mustache.render(template, {name, url: fakeUrl, page: edit.page})
+  const status = Mustache.render(template, {url: fakeUrl, page: edit.page})
   return status.length
 }
 
-function getStatus(edit, name, template) {
+function getStatus(edit, template) {
   let page = edit.page
-  const len = getStatusLength(edit, name, template)
+  const len = getStatusLength(edit, template)
   if (len > 280) {
     const newLength = edit.page.length - (len - 279)
     page = edit.page.slice(0, +newLength + 1 || undefined)
   }
   return Mustache.render(template, {
-    name,
     url: edit.url,
     page
   })
@@ -155,28 +107,11 @@ function takeScreenshot(url) {
 }
 
 function sendStatus(account, status, edit) {
-  console.log(status)
+  console.log('Status:', status)
 
   if (!argv.noop && (!account.throttle || !isRepeat(edit))) {
 
     takeScreenshot(edit.url).then(function(screenshot) {
-
-      // Mastodon
-      if (account.mastodon) {
-        const mastodon = new Mastodon(account.mastodon)
-        mastodon.post('media', {file: fs.createReadStream(screenshot)})
-          .then(function(response) {
-            if (!response.data.id) {
-              console.log('error uploading screenshot to mastodon')
-              return
-            }
-            mastodon.post('statuses', { 'status': status, media_ids: [response.data.id] }, function(err) {
-              if (err) {
-                console.log(err)
-              }
-            })
-        })
-      }
 
       // Twitter
       if (account.access_token) {
@@ -217,20 +152,16 @@ function sendStatus(account, status, edit) {
   }
 }
 
-function inspect(account, edit) {
-  if (edit.url) {
-    if (account.whitelist && account.whitelist[edit.wikipedia]
-        && account.whitelist[edit.wikipedia][edit.page]) {
-      status = getStatus(edit, edit.user, account.template)
+function presidentPage(url, pages) {
+  const exist = (pages.indexOf(url) > -1)
+  return exist
+}
+
+function inspect(account, edit, pages, lang) {
+  if (edit.url && edit.wikipediaShort === 'pt') {
+    if (presidentPage(edit.pageUrl, pages)) {
+      status = getStatus(edit, account.template)
       sendStatus(account, status, edit)
-    } else if (account.ranges && edit.anonymous) {
-      for (let name in account.ranges) {
-        const ranges = account.ranges[name]
-        if (isIpInAnyRange(edit.user, ranges)) {
-          status = getStatus(edit, name, account.template)
-          sendStatus(account, status, edit)
-        }
-      }
     }
   }
 }
@@ -268,15 +199,17 @@ function canTweet(account, error) {
 
 function main() {
   const config = getConfig(argv.config)
+  const pages = config.pages
+  const lang = config.wiki_lang
   return checkConfig(config, function(err) {
     if (!err) {
       const wikipedia = new WikiChanges({ircNickname: config.nick})
       return wikipedia.listen(edit => {
-        if (argv.verbose) {
+        if (config.verbose) {
           console.log(JSON.stringify(edit))
         }
         Array.from(config.accounts).map((account) =>
-          inspect(account, edit))
+          inspect(account, edit, pages, lang))
       })
     } else {
       return console.log(err)
@@ -290,11 +223,6 @@ if (require.main === module) {
 
 module.exports = {
   main,
-  address,
-  ipToInt,
-  compareIps,
-  isIpInRange,
-  isIpInAnyRange,
   getConfig,
   getStatus,
   takeScreenshot
