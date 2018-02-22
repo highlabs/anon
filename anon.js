@@ -146,7 +146,7 @@ function presidentPage(url, pages) {
 
 function inspect(account, edit, pages, lang) {
   if (edit.url && edit.wikipediaShort === lang) {
-    if (presidentPage('https://pt.wikipedia.org/wiki/Ciro_Gomes', pages)) {
+    if (presidentPage(edit.pageUrl, pages)) {
       status = getStatus(edit, account.template)
       sendStatus(account, status, edit)
     }
