@@ -1,5 +1,7 @@
-{
-  "nick": "seu_nick",
+const pages = require('./pages.js')
+
+module.exports = {
+  "nick": "presidentes_bot",
   "accounts": [
     {
       "consumer_key": "",
@@ -11,8 +13,6 @@
       "namespaces": ["article", "file", "media", "main"]
     }
   ],
-  "verbose": false,
-  "pages": "pages.json"
+  "wiki_lang": "pt",
+  "pages": pages
 }
-
-

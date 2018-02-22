@@ -7,27 +7,13 @@ const phantom       = require('phantom')
 const minimist      = require('minimist')
 const Mustache      = require('mustache')
 const {WikiChanges} = require('wikichanges')
+const configFile = require('./config.js')
 
 const argv = minimist(process.argv.slice(2), {
   default: {
-    verbose: false,
-    config: './config.json'
+    verbose: false
   }
 })
-
-function getConfig(path) {
-  const config = loadJson(path)
-  // see if ranges are externally referenced as a separate .json files
-  if (config.accounts) {
-    for (let account of Array.from(config.accounts)) {
-      if (typeof account.ranges === 'string') {
-        account.ranges = loadJson(account.ranges)
-      }
-    }
-  }
-  console.log("loaded config from", path)
-  return config
-}
 
 function loadJson(path) {
   if ((path[0] !== '/') && (path.slice(0, 2) !== './')) {
@@ -144,6 +130,7 @@ function sendStatus(account, status, edit) {
               }
             })
             fs.unlink(screenshot)
+            console.log('enviado')
           })
         })
       }
@@ -158,8 +145,8 @@ function presidentPage(url, pages) {
 }
 
 function inspect(account, edit, pages, lang) {
-  if (edit.url && edit.wikipediaShort === 'pt') {
-    if (presidentPage(edit.pageUrl, pages)) {
+  if (edit.url && edit.wikipediaShort === lang) {
+    if (presidentPage('https://pt.wikipedia.org/wiki/Ciro_Gomes', pages)) {
       status = getStatus(edit, account.template)
       sendStatus(account, status, edit)
     }
@@ -198,8 +185,8 @@ function canTweet(account, error) {
 }
 
 function main() {
-  const config = getConfig(argv.config)
-  const pages = config.pages
+  const config = configFile
+  const pages = config.pages.list
   const lang = config.wiki_lang
   return checkConfig(config, function(err) {
     if (!err) {
@@ -223,7 +210,6 @@ if (require.main === module) {
 
 module.exports = {
   main,
-  getConfig,
   getStatus,
   takeScreenshot
 }

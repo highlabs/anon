@@ -12,14 +12,14 @@ Para rodar você precisa seguir os passos:
 1. `$ git clone https://github.com/highlabs/presidenciaveis_bot`
 1. `$ cd presidenciaveis_bot`
 1. `$ npm install`
-1. `$ cp config.json.template config.json`
-1. Adicionar as credências do twitter em `config.json`
-1. Adicionar páginas a monitorar em `pages.json`
+1. `$ cp config.js.example config.js`
+1. Adicionar as credências do twitter em `config.js`
+1. Adicionar páginas a monitorar em `pages.js`
 1. `./anon.js`
 
 ### Páginas
 
-Para monitorar as páginas basta adicionar novas URL em  `pages.json` assim:
+Para monitorar as páginas basta adicionar novas URL em  `pages.js` assim:
 
 `["https://en.wikipedia.org/wiki/Pa%C3%A7oca", "https://en.wikipedia.org/wiki/Brigadeiro"]`
 
