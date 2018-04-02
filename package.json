@@ -1,0 +1,22 @@
+{
+  "name": "micro_presidentes",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "micro",
+    "dev": "micro-dev",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "micro": "^9.1.4",
+    "twit": "^2.2.9",
+    "underscore": "^1.8.3",
+    "wikichanges": "^0.2.8"
+  },
+  "devDependencies": {
+    "micro-dev": "^2.2.2"
+  }
+}
