@@ -12,6 +12,7 @@ module.exports = {
     'http://pt.wikipedia.org/wiki/Jos%C3%A9_Maria_Eymael',
     'http://pt.wikipedia.org/wiki/Fernando_Collor_de_Mello',
     'http://pt.wikipedia.org/wiki/Jo%C3%A3o_Amo%C3%AAdo',
-    'http://pt.wikipedia.org/wiki/Manuela_d%27%C3%81vila'
+    'http://pt.wikipedia.org/wiki/Manuela_d%27%C3%81vila',
+    'https://pt.wikipedia.org/wiki/%C3%81lvaro_Dias'
   ]
 }
