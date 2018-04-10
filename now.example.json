@@ -1,0 +1,5 @@
+{
+  "env": {
+    "FIREBASE_URL": "https://XYZ.firebaseio.com"
+  }
+}

@@ -1,2 +1,4 @@
 node_modules
 twitter.config.js
+serviceAccountKey.json
+now.json
