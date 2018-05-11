@@ -24,6 +24,8 @@ function streamWikipedia () {
   const w = new wikichanges.WikiChanges({wikipedias: ['#pt.wikipedia']})
 
   w.listen(function (change) {
+    const dateNow = new Date()
+    change.date = dateNow.toString()
     if (_.contains(pages.list, change.pageUrl)) {
       const text = `A página "${change.page}" foi editada na Wikipédia. Vejas as mudanças: ${change.pageUrl}`
       tweetToAccount(text)
